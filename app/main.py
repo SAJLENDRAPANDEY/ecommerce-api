@@ -1,4 +1,8 @@
 from fastapi import FastAPI
+from app.routers import products
+
+
+
 
 app=FastAPI(
     title="E-Commerce API",
@@ -16,3 +20,6 @@ def health_check():
     return {
         "status":"Healthy"
     }
+
+
+app.include_router(products.router)
