@@ -10,3 +10,9 @@ def home():
     return {
         "message":"Ecommerce api is running ."
     }
+
+@app.get("/health")
+def health_check():
+    return {
+        "status":"Healthy"
+    }
