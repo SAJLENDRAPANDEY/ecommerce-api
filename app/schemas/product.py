@@ -6,3 +6,10 @@ class ProductResponse(BaseModel):
     description: str
     price: float
     stock: int
+
+
+class CreateProduct(BaseModel):
+    name:str
+    description:str
+    price:float
+    stock:int

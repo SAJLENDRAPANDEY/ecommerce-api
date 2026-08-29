@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.schemas.product import ProductResponse
+from app.schemas.product import ProductResponse,CreateProduct
 
 router = APIRouter(
     prefix="/products",
@@ -35,3 +35,6 @@ def get_product(product_id: int):
     for product in products:
         if product["id"] == product_id:
             return product
+@router.post("/")
+def create_product(product:CreateProduct):
+    return product
