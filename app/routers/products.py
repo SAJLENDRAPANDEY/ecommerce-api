@@ -1,17 +1,16 @@
-from fastapi import APIRouter, HTTPException, status
 
+from fastapi import APIRouter, Depends, status,HTTPException
+from sqlalchemy.orm import Session
+
+from app.core.database import get_db
 from app.schemas.product import (
     ProductResponse,
-    CreateProduct,
-    ProductUpdate
+    CreateProduct
 )
-
 from app.services.product_service import (
-    get_all_products,
-    get_product_by_id,
+    get_products,
     create_product,
-    update_product,
-    delete_product
+    get_product_by_id
 )
 
 
@@ -25,18 +24,36 @@ router = APIRouter(
     "/",
     response_model=list[ProductResponse]
 )
-def get_products():
+def read_products(
+    db: Session = Depends(get_db)
+):
+    return get_products(db)
 
-    return get_all_products()
+
+@router.post(
+    "/",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def create_product_endpoint(
+    product: CreateProduct,
+    db: Session = Depends(get_db)
+):
+    return create_product(db, product)
 
 
 @router.get(
     "/{product_id}",
     response_model=ProductResponse
 )
-def get_product(product_id: int):
-
-    product = get_product_by_id(product_id)
+def read_product(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    product = get_product_by_id(
+        db,
+        product_id
+    )
 
     if product is None:
         raise HTTPException(
@@ -45,73 +62,3 @@ def get_product(product_id: int):
         )
 
     return product
-
-
-@router.post(
-    "/",
-    response_model=ProductResponse,
-    status_code=status.HTTP_201_CREATED
-)
-def create_product_endpoint(product: CreateProduct):
-
-    return create_product(product)
-
-
-@router.put(
-    "/{product_id}",
-    response_model=ProductResponse
-)
-def update_product_endpoint(
-    product_id: int,
-    product: ProductUpdate
-):
-
-    updated_product = update_product(
-        product_id,
-        product
-    )
-
-    if updated_product is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-
-    return updated_product
-
-
-@router.delete(
-    "/{product_id}"
-)
-def delete_product_endpoint(product_id: int):
-
-    deleted_product = delete_product(product_id)
-
-    if deleted_product is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-
-    return {
-        "message": "Product deleted successfully"
-    }
-
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-
-from app.core.database import get_db
-from app.services.product_service import get_products
-
-
-router = APIRouter(
-    prefix="/products",
-    tags=["Products"]
-)
-
-
-@router.get("/", response_model=list[ProductResponse])
-def read_products(
-    db: Session = Depends(get_db)
-):
-    return get_products(db)
