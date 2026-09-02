@@ -67,3 +67,22 @@ def update_product(
     db.refresh(product)
 
     return product
+
+
+def delete_product(
+    db: Session,
+    product_id: int
+):
+    result = db.execute(
+        select(Product).where(Product.id == product_id)
+    )
+
+    product = result.scalar_one_or_none()
+
+    if product is None:
+        return None
+
+    db.delete(product)
+    db.commit()
+
+    return product
