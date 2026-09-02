@@ -10,7 +10,9 @@ from app.schemas.product import (
 from app.services.product_service import (
     get_products,
     create_product,
-    get_product_by_id
+    get_product_by_id,
+    update_product,
+    delete_product
 )
 
 from app.schemas.product import (
@@ -99,3 +101,27 @@ def update_product_endpoint(
         )
 
     return updated_product
+
+
+@router.delete(
+    "/{product_id}",
+    status_code=status.HTTP_200_OK
+)
+def delete_product_endpoint(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    deleted_product = delete_product(
+        db,
+        product_id
+    )
+
+    if deleted_product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    return {
+        "message": "Product deleted successfully"
+    }
