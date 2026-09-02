@@ -13,6 +13,19 @@ from app.services.product_service import (
     get_product_by_id
 )
 
+from app.schemas.product import (
+    ProductResponse,
+    CreateProduct,
+    ProductUpdate
+)
+
+from app.services.product_service import (
+    get_products,
+    create_product,
+    get_product_by_id,
+    update_product
+)
+
 
 router = APIRouter(
     prefix="/products",
@@ -62,3 +75,27 @@ def read_product(
         )
 
     return product
+
+
+@router.put(
+    "/{product_id}",
+    response_model=ProductResponse
+)
+def update_product_endpoint(
+    product_id: int,
+    product: ProductUpdate,
+    db: Session = Depends(get_db)
+):
+    updated_product = update_product(
+        db,
+        product_id,
+        product
+    )
+
+    if updated_product is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    return updated_product
