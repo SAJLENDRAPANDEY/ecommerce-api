@@ -44,6 +44,10 @@ def read_products(
     min_price: float | None = None,
     max_price: float | None = None,
     stock_available: bool | None = None,
+    page: int = 1,
+    limit: int = 10,
+    sort_by: str = "id",
+    order: str = "asc",
     db: Session = Depends(get_db)
 ):
     return get_products(
@@ -51,7 +55,11 @@ def read_products(
         search=search,
         min_price=min_price,
         max_price=max_price,
-        stock_available=stock_available
+        stock_available=stock_available,
+        page=page,
+        limit=limit,
+        sort_by=sort_by,
+        order=order
     )
 
 

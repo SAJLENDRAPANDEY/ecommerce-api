@@ -1,16 +1,17 @@
-from pydantic import BaseModel,ConfigDict,Field
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProductResponse(BaseModel):
-
-    
     id: int
     name: str
     description: str
     price: float
     stock: int
+    category_id: int | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class CreateProduct(BaseModel):
     name: str = Field(
@@ -30,14 +31,11 @@ class CreateProduct(BaseModel):
     stock: int = Field(
         ge=0
     )
-    name: str
-    description: str
-    price: float
-    stock: int
+
+    category_id: int | None = None
 
 
 class ProductUpdate(BaseModel):
-
     name: str | None = Field(
         default=None,
         min_length=2,
@@ -59,8 +57,5 @@ class ProductUpdate(BaseModel):
         default=None,
         ge=0
     )
-    
-    name: str | None = None
-    description: str | None = None
-    price: float | None = None
-    stock: int | None = None
+
+    category_id: int | None = None

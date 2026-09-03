@@ -80,7 +80,8 @@ def create_product(db: Session, product_data: CreateProduct):
         name=product_data.name,
         description=product_data.description,
         price=product_data.price,
-        stock=product_data.stock
+        stock=product_data.stock,
+        category_id=product_data.category_id
     )
 
     db.add(product)
@@ -103,11 +104,7 @@ def update_product(
     product_id: int,
     product_data: ProductUpdate
 ):
-    result = db.execute(
-        select(Product).where(Product.id == product_id)
-    )
-
-    product = result.scalar_one_or_none()
+    product = db.get(Product, product_id)
 
     if product is None:
         return None
@@ -124,11 +121,13 @@ def update_product(
     if product_data.stock is not None:
         product.stock = product_data.stock
 
+    if product_data.category_id is not None:
+        product.category_id = product_data.category_id
+
     db.commit()
     db.refresh(product)
 
     return product
-
 
 def delete_product(
     db: Session,
