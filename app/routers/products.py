@@ -40,9 +40,19 @@ router = APIRouter(
     response_model=list[ProductResponse]
 )
 def read_products(
+    search: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    stock_available: bool | None = None,
     db: Session = Depends(get_db)
 ):
-    return get_products(db)
+    return get_products(
+        db=db,
+        search=search,
+        min_price=min_price,
+        max_price=max_price,
+        stock_available=stock_available
+    )
 
 
 @router.post(

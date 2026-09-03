@@ -6,10 +6,41 @@ from app.models.product import Product
 from app.schemas.product import CreateProduct, ProductUpdate
 
 
-def get_products(db: Session):
-    result = db.execute(
-        select(Product)
-    )
+def get_products(
+    db: Session,
+    search: str | None = None,
+    min_price: float | None = None,
+    max_price: float | None = None,
+    stock_available: bool | None = None
+):
+    query = select(Product)
+
+    if search:
+        query = query.where(
+            Product.name.ilike(f"%{search}%")
+        )
+
+    if min_price is not None:
+        query = query.where(
+            Product.price >= min_price
+        )
+
+    if max_price is not None:
+        query = query.where(
+            Product.price <= max_price
+        )
+
+    if stock_available is True:
+        query = query.where(
+            Product.stock > 0
+        )
+
+    if stock_available is False:
+        query = query.where(
+            Product.stock == 0
+        )
+
+    result = db.execute(query)
 
     return result.scalars().all()
 
@@ -86,3 +117,5 @@ def delete_product(
     db.commit()
 
     return product
+
+    
