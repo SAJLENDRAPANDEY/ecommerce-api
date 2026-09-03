@@ -2,11 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import create_access_token
+
 from app.schemas.user import (
     UserCreate,
     UserResponse,
     UserLogin
 )
+
 from app.services.auth_service import (
     create_user,
     authenticate_user
@@ -59,8 +62,14 @@ def login(
             detail="Invalid email or password"
         )
 
+    access_token = create_access_token(
+        data={
+            "sub": str(user.id),
+            "email": user.email
+        }
+    )
+
     return {
-        "message": "Login successful",
-        "user_id": user.id,
-        "email": user.email
+        "access_token": access_token,
+        "token_type": "bearer"
     }

@@ -1,19 +1,10 @@
-
-from fastapi import APIRouter, Depends, status,HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.product import (
-    ProductResponse,
-    CreateProduct
-)
-from app.services.product_service import (
-    get_products,
-    create_product,
-    get_product_by_id,
-    update_product,
-    delete_product
-)
+from app.core.security import get_current_user
+
+from app.models.user import User
 
 from app.schemas.product import (
     ProductResponse,
@@ -23,9 +14,10 @@ from app.schemas.product import (
 
 from app.services.product_service import (
     get_products,
-    create_product,
     get_product_by_id,
-    update_product
+    create_product,
+    update_product,
+    delete_product
 )
 
 
@@ -34,6 +26,10 @@ router = APIRouter(
     tags=["Products"]
 )
 
+
+# --------------------------------------------------
+# Get All Products
+# --------------------------------------------------
 
 @router.get(
     "/",
@@ -63,17 +59,9 @@ def read_products(
     )
 
 
-@router.post(
-    "/",
-    response_model=ProductResponse,
-    status_code=status.HTTP_201_CREATED
-)
-def create_product_endpoint(
-    product: CreateProduct,
-    db: Session = Depends(get_db)
-):
-    return create_product(db, product)
-
+# --------------------------------------------------
+# Get Product By ID
+# --------------------------------------------------
 
 @router.get(
     "/{product_id}",
@@ -97,44 +85,73 @@ def read_product(
     return product
 
 
+# --------------------------------------------------
+# Create Product
+# --------------------------------------------------
+
+@router.post(
+    "/",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def create_product_endpoint(
+    product_data: CreateProduct,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return create_product(
+        db,
+        product_data
+    )
+
+
+# --------------------------------------------------
+# Update Product
+# --------------------------------------------------
+
 @router.put(
     "/{product_id}",
     response_model=ProductResponse
 )
 def update_product_endpoint(
     product_id: int,
-    product: ProductUpdate,
-    db: Session = Depends(get_db)
+    product_data: ProductUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    updated_product = update_product(
+    product = update_product(
         db,
         product_id,
-        product
+        product_data
     )
 
-    if updated_product is None:
+    if product is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
 
-    return updated_product
+    return product
 
+
+# --------------------------------------------------
+# Delete Product
+# --------------------------------------------------
 
 @router.delete(
-    "/{product_id}",
-    status_code=status.HTTP_200_OK
+    "/{product_id}"
 )
 def delete_product_endpoint(
     product_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    deleted_product = delete_product(
+    product = delete_product(
         db,
         product_id
     )
 
-    if deleted_product is None:
+    if product is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
