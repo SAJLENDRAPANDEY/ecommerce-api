@@ -3,6 +3,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -32,4 +35,13 @@ class Product(Base):
         Integer,
         nullable=False,
         default=0
+    )
+    category_id: Mapped[int | None] = mapped_column(
+    ForeignKey("categories.id"),
+    nullable=True
+    )
+
+    category = relationship(
+        "Category",
+        back_populates="products"
     )
