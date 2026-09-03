@@ -2,11 +2,7 @@ from fastapi import FastAPI
 
 from app.routers import products
 from app.routers.auth import router as auth_router
-
-# Import models so SQLAlchemy registers all models
-from app.models.user import User
-from app.models.product import Product
-from app.models.category import Category
+from app.routers.cart import router as cart_router
 
 
 app = FastAPI(
@@ -31,3 +27,4 @@ def health_check():
 
 app.include_router(products.router)
 app.include_router(auth_router)
+app.include_router(cart_router)
