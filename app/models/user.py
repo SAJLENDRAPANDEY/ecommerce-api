@@ -1,30 +1,30 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.database import Base
 
 
-class UserCreate(BaseModel):
-    name: str = Field(
-        min_length=2,
-        max_length=100
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        index=True
     )
 
-    email: EmailStr
-
-    password: str = Field(
-        min_length=6,
-        max_length=100
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False
     )
 
-
-class UserResponse(BaseModel):
-    id: int
-    name: str
-    email: EmailStr
-
-    model_config = ConfigDict(
-        from_attributes=True
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False
     )
 
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+    hashed_password: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
