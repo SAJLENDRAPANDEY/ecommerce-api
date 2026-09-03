@@ -11,15 +11,21 @@ def get_products(
     search: str | None = None,
     min_price: float | None = None,
     max_price: float | None = None,
-    stock_available: bool | None = None
+    stock_available: bool | None = None,
+    page: int = 1,
+    limit: int = 10,
+    sort_by: str = "id",
+    order: str = "asc"
 ):
     query = select(Product)
 
+    # Search
     if search:
         query = query.where(
             Product.name.ilike(f"%{search}%")
         )
 
+    # Price filters
     if min_price is not None:
         query = query.where(
             Product.price >= min_price
@@ -30,6 +36,7 @@ def get_products(
             Product.price <= max_price
         )
 
+    # Stock filter
     if stock_available is True:
         query = query.where(
             Product.stock > 0
@@ -39,6 +46,29 @@ def get_products(
         query = query.where(
             Product.stock == 0
         )
+
+    # Sorting
+    allowed_sort_fields = {
+        "id": Product.id,
+        "name": Product.name,
+        "price": Product.price,
+        "stock": Product.stock
+    }
+
+    sort_column = allowed_sort_fields.get(
+        sort_by,
+        Product.id
+    )
+
+    if order.lower() == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
+
+    # Pagination
+    offset = (page - 1) * limit
+
+    query = query.offset(offset).limit(limit)
 
     result = db.execute(query)
 
