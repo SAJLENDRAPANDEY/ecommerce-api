@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.order import Order
+from app.models.order import Order, OrderItem
 from app.models.product import Product
 
 from app.routers.cart import cart_items
@@ -16,8 +16,12 @@ def create_order(
         return None
 
     total_amount = 0
+    order_items_data = []
 
-    # Check products and stock
+    # ---------------------------------------------
+    # Validate cart and calculate total
+    # ---------------------------------------------
+
     for product_id, quantity in user_cart.items():
 
         product = db.get(Product, product_id)
@@ -28,9 +32,19 @@ def create_order(
         if product.stock < quantity:
             return None
 
-        total_amount += product.price * quantity
+        subtotal = product.price * quantity
+        total_amount += subtotal
 
-    # Create order
+        order_items_data.append({
+            "product": product,
+            "quantity": quantity,
+            "price": product.price
+        })
+
+    # ---------------------------------------------
+    # Create Order
+    # ---------------------------------------------
+
     order = Order(
         user_id=user_id,
         total_amount=total_amount,
@@ -38,18 +52,37 @@ def create_order(
     )
 
     db.add(order)
+    db.flush()
 
-    # Reduce stock
-    for product_id, quantity in user_cart.items():
+    # ---------------------------------------------
+    # Create Order Items
+    # ---------------------------------------------
 
-        product = db.get(Product, product_id)
+    for item in order_items_data:
 
-        product.stock -= quantity
+        order_item = OrderItem(
+            order_id=order.id,
+            product_id=item["product"].id,
+            quantity=item["quantity"],
+            price=item["price"]
+        )
+
+        db.add(order_item)
+
+        # Reduce product stock
+        item["product"].stock -= item["quantity"]
+
+    # ---------------------------------------------
+    # Save Everything
+    # ---------------------------------------------
 
     db.commit()
     db.refresh(order)
 
-    # Clear cart after successful order
+    # Load order items
+    order.items
+
+    # Clear cart
     cart_items.pop(user_id, None)
 
     return order
@@ -61,8 +94,12 @@ def get_user_orders(
 ):
     return (
         db.query(Order)
-        .filter(Order.user_id == user_id)
-        .order_by(Order.created_at.desc())
+        .filter(
+            Order.user_id == user_id
+        )
+        .order_by(
+            Order.created_at.desc()
+        )
         .all()
     )
 
