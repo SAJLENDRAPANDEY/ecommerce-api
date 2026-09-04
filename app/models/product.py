@@ -1,10 +1,8 @@
-from sqlalchemy import Float, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
+from app.models.category import Category
 
 
 class Product(Base):
@@ -36,12 +34,18 @@ class Product(Base):
         nullable=False,
         default=0
     )
+
     category_id: Mapped[int | None] = mapped_column(
-    ForeignKey("categories.id"),
-    nullable=True
+        ForeignKey("categories.id"),
+        nullable=True
     )
 
     category = relationship(
         "Category",
         back_populates="products"
+    )
+
+    order_items = relationship(
+    "OrderItem",
+    back_populates="product"
     )

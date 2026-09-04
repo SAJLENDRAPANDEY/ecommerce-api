@@ -84,5 +84,6 @@ class OrderItem(Base):
     )
 
     product = relationship(
-        "Product"
+    "Product",
+    back_populates="order_items"
     )

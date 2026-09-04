@@ -5,6 +5,11 @@ from app.routers.auth import router as auth_router
 from app.routers.cart import router as cart_router
 from app.routers.orders import router as orders_router
 
+from app.models.user import User
+from app.models.product import Product
+from app.models.category import Category
+from app.models.order import Order, OrderItem
+
 
 app = FastAPI(
     title="E-Commerce API",

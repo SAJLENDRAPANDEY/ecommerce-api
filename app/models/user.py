@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
 
@@ -20,11 +20,16 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(255),
         unique=True,
-        index=True,
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     hashed_password: Mapped[str] = mapped_column(
         String(255),
         nullable=False
+    )
+
+    orders = relationship(
+        "Order",
+        back_populates="user"
     )
